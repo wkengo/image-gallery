@@ -5,15 +5,21 @@
 
 <meta charset="utf-8">
 
-<meta name="viewport"
-content="width=device-width,initial-scale=1">
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1"
+>
 
-<title>画像ギャラリー</title>
+<title>便利機能の紹介ページ</title>
 
 <style>
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -22,161 +28,537 @@ body {
     "Meiryo UI",
     Meiryo,
     sans-serif;
-  background: #f5f6f8;
-  color: #222;
+  color: #172033;
+  background: #f5f7fb;
 }
 
-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: white;
-  border-bottom: 1px solid #ccc;
-  padding: 10px;
+
+/* ============================================================
+   ヘッダー
+============================================================ */
+
+.hero {
+  padding: 32px 40px 30px;
+  color: #fff;
+  background:
+    linear-gradient(
+      110deg,
+      #061852 0%,
+      #17104f 55%,
+      #41004c 100%
+    );
 }
 
-h1 {
-  margin: 0 0 8px;
-  font-size: 20px;
+.hero-inner {
+  max-width: 1800px;
+  margin: 0 auto;
 }
 
-#categories {
+.hero h1 {
+  margin: 0 0 16px;
+  font-size: 34px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.hero p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+
+/* ============================================================
+   操作部分
+============================================================ */
+
+.controls {
+  background: #fff;
+  border-bottom: 1px solid #dce2ec;
+}
+
+.controls-inner {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 24px 40px 18px;
+}
+
+.search-row {
   display: flex;
-  gap: 6px;
-  overflow-x: auto;
+  align-items: center;
+  gap: 12px;
 }
 
-#categories button {
-  white-space: nowrap;
+.search-box {
+  width: min(500px, 100%);
+  height: 46px;
+  padding: 0 16px;
+  border: 1px solid #cbd3df;
+  border-radius: 9px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  outline: none;
+}
+
+.search-box:focus {
+  border-color: #315ec8;
+  box-shadow:
+    0 0 0 3px
+    rgba(49,94,200,.12);
+}
+
+.clear-button {
+  height: 46px;
+  padding: 0 18px;
+  border: 1px solid #cbd3df;
+  border-radius: 9px;
+  background: #fff;
   font-family: inherit;
   font-size: 14px;
-  padding: 6px 12px;
-  border: 1px solid #aaa;
-  border-radius: 5px;
-  background: white;
+  font-weight: 700;
   cursor: pointer;
 }
 
-#categories button.active {
-  background: #222;
-  color: white;
+.clear-button:hover {
+  background: #f4f6fa;
 }
 
-#gallery {
+.count {
+  margin-left: 4px;
+  color: #647086;
+  font-size: 14px;
+}
+
+
+/* ============================================================
+   カテゴリボタン
+============================================================ */
+
+.category-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #e3e7ee;
+}
+
+.category-button {
+  padding: 9px 17px;
+  border: 0;
+  border-radius: 999px;
+  background: #e9eefc;
+  color: #234b9c;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.category-button:hover {
+  background: #dce6ff;
+}
+
+.category-button.active {
+  background: #173f96;
+  color: #fff;
+}
+
+
+/* ============================================================
+   メイン
+============================================================ */
+
+main {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 24px 40px 60px;
+}
+
+
+/* ============================================================
+   カテゴリセクション
+============================================================ */
+
+.category-section {
+  margin-bottom: 36px;
+}
+
+.category-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #d6deeb;
+}
+
+.category-title {
+  margin: 0;
+  color: #111827;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.category-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 27px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #e8eefc;
+  color: #173f96;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   カード一覧
+============================================================ */
+
+.gallery-grid {
   display: grid;
   grid-template-columns:
     repeat(
       auto-fill,
-      minmax(180px, 1fr)
+      minmax(260px, 1fr)
     );
-  gap: 8px;
-  padding: 10px;
+  gap: 18px;
 }
+
+
+/* ============================================================
+   カード
+============================================================ */
 
 .card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   padding: 0;
-  border: 1px solid #ccc;
-  border-radius: 6px;
   overflow: hidden;
-  background: white;
-  cursor: pointer;
+  border: 1px solid #d9e0ea;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow:
+    0 2px 8px
+    rgba(20,35,70,.06);
   font-family: inherit;
   text-align: left;
+  cursor: pointer;
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease;
 }
 
-.card img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  display: block;
-  background: #eee;
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 7px 20px
+    rgba(20,35,70,.12);
 }
 
-.card span {
-  display: block;
-  padding: 7px;
-  font-size: 14px;
-}
-
-#modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background:
-    rgba(0,0,0,.88);
+.image-area {
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
+  height: 310px;
+  padding: 12px;
+  background: #fff;
 }
 
-#modal.open {
-  display: flex;
-}
-
-#modal img {
+.image-area img {
+  display: block;
   max-width: 100%;
   max-height: 100%;
+  width: auto;
+  height: auto;
   object-fit: contain;
 }
 
-#close {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  color: white;
-  background: #222;
-  border: 1px solid #777;
-  border-radius: 5px;
-  font-size: 28px;
-  padding: 0 10px;
+.card-title {
+  min-height: 58px;
+  padding: 14px 15px 16px;
+  border-top: 1px solid #edf0f5;
+  color: #111827;
+  font-size: 16px;
+  line-height: 1.45;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+
+/* ============================================================
+   0件
+============================================================ */
+
+.empty {
+  padding: 50px 10px;
+  color: #667085;
+  font-size: 15px;
+  text-align: center;
+}
+
+
+/* ============================================================
+   拡大ビュー
+============================================================ */
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background:
+    rgba(5,10,25,.92);
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modal-image {
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 40px);
+  object-fit: contain;
+}
+
+.modal-close {
+  position: fixed;
+  top: 15px;
+  right: 20px;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.4);
+  border-radius: 50%;
+  background: rgba(0,0,0,.45);
+  color: #fff;
+  font-family: Arial,sans-serif;
+  font-size: 30px;
+  line-height: 42px;
   cursor: pointer;
 }
 
-.empty {
-  padding: 20px;
+
+/* ============================================================
+   スマートフォン
+============================================================ */
+
+@media (
+  max-width: 700px
+) {
+
+  .hero {
+    padding:
+      22px 16px;
+  }
+
+  .hero h1 {
+    font-size: 25px;
+  }
+
+  .hero p {
+    font-size: 13px;
+  }
+
+  .controls-inner {
+    padding:
+      16px;
+  }
+
+  .search-row {
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .count {
+    margin-left: 0;
+  }
+
+  main {
+    padding:
+      18px 12px
+      40px;
+  }
+
+  .category-title {
+    font-size: 20px;
+  }
+
+  .gallery-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0,1fr)
+      );
+    gap: 10px;
+  }
+
+  .image-area {
+    height: 230px;
+    padding: 7px;
+  }
+
+  .card-title {
+    min-height: 50px;
+    padding: 10px;
+    font-size: 13px;
+  }
+
+}
+
+
+@media (
+  max-width: 430px
+) {
+
+  .gallery-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0,1fr)
+      );
+  }
+
+  .image-area {
+    height: 200px;
+  }
+
 }
 
 </style>
 
 </head>
 
+
 <body>
 
-<header>
 
-<h1>画像ギャラリー</h1>
+<header class="hero">
 
-<div id="categories"></div>
+  <div class="hero-inner">
+
+    <h1>
+      便利機能の紹介ページ
+    </h1>
+
+    <p>
+      画像はクリックで大きく表示できます。
+      カテゴリやタイトルから目的の画像を検索できます。
+    </p>
+
+  </div>
 
 </header>
 
+
+<section class="controls">
+
+  <div class="controls-inner">
+
+    <div class="search-row">
+
+      <input
+        id="searchBox"
+        class="search-box"
+        type="search"
+        placeholder="タイトル・カテゴリで検索"
+      >
+
+      <button
+        id="clearButton"
+        class="clear-button"
+        type="button"
+      >
+        検索クリア
+      </button>
+
+      <div
+        id="displayCount"
+        class="count"
+      ></div>
+
+    </div>
+
+
+    <div
+      id="categoryButtons"
+      class="category-row"
+    ></div>
+
+  </div>
+
+</section>
+
+
 <main id="gallery"></main>
 
-<div id="modal">
 
-<button id="close">×</button>
+<div
+  id="modal"
+  class="modal"
+>
 
-<img id="largeImage">
+  <button
+    id="modalClose"
+    class="modal-close"
+    type="button"
+    aria-label="閉じる"
+  >
+    ×
+  </button>
+
+  <img
+    id="modalImage"
+    class="modal-image"
+    alt=""
+  >
 
 </div>
+
 
 <script>
 
 let galleryData = [];
 
-let currentCategory =
+let selectedCategory =
   'すべて';
 
-
-const categories =
-  document.getElementById(
-    'categories'
-  );
 
 const gallery =
   document.getElementById(
     'gallery'
+  );
+
+const searchBox =
+  document.getElementById(
+    'searchBox'
+  );
+
+const clearButton =
+  document.getElementById(
+    'clearButton'
+  );
+
+const categoryButtons =
+  document.getElementById(
+    'categoryButtons'
+  );
+
+const displayCount =
+  document.getElementById(
+    'displayCount'
   );
 
 const modal =
@@ -184,192 +566,560 @@ const modal =
     'modal'
   );
 
-const largeImage =
+const modalImage =
   document.getElementById(
-    'largeImage'
+    'modalImage'
+  );
+
+const modalClose =
+  document.getElementById(
+    'modalClose'
   );
 
 
-function renderCategories() {
+// ------------------------------------------------------------
+// カテゴリ一覧
+// ------------------------------------------------------------
+function getCategories() {
 
-  const names = [
-    'すべて',
+  return [
     ...new Set(
       galleryData.map(
-        x => x.category
+        item =>
+          item.category
       )
     )
   ];
 
-
-  categories.innerHTML = '';
-
-
-  names.forEach(
-    name => {
-
-      const button =
-        document.createElement(
-          'button'
-        );
-
-      button.textContent =
-        name;
-
-      if (
-        name ===
-        currentCategory
-      ) {
-
-        button.classList.add(
-          'active'
-        );
-      }
+}
 
 
-      button.onclick =
-        () => {
+// ------------------------------------------------------------
+// カテゴリ件数
+// ------------------------------------------------------------
+function getCategoryCount(
+  category
+) {
 
-          currentCategory =
-            name;
+  return galleryData.filter(
+    item =>
+      item.category ===
+      category
+  ).length;
 
-          renderCategories();
-
-          renderGallery();
-
-        };
+}
 
 
-      categories.appendChild(
-        button
+// ------------------------------------------------------------
+// カテゴリボタン描画
+// ------------------------------------------------------------
+function renderCategoryButtons() {
+
+  const categories =
+    getCategories();
+
+
+  categoryButtons.innerHTML =
+    '';
+
+
+  const allButton =
+    createCategoryButton(
+      'すべて',
+      galleryData.length
+    );
+
+
+  categoryButtons.appendChild(
+    allButton
+  );
+
+
+  categories.forEach(
+    category => {
+
+      categoryButtons.appendChild(
+        createCategoryButton(
+          category,
+          getCategoryCount(
+            category
+          )
+        )
       );
 
     }
   );
+
 }
 
 
-function renderGallery() {
+// ------------------------------------------------------------
+// カテゴリボタン生成
+// ------------------------------------------------------------
+function createCategoryButton(
+  category,
+  count
+) {
 
-  const items =
-    currentCategory ===
-    'すべて'
-
-      ? galleryData
-
-      : galleryData.filter(
-          x =>
-            x.category ===
-            currentCategory
-        );
-
-
-  gallery.innerHTML = '';
+  const button =
+    document.createElement(
+      'button'
+    );
 
 
-  if (!items.length) {
+  button.type =
+    'button';
 
-    gallery.innerHTML =
-      '<div class="empty">画像がありません。</div>';
 
-    return;
+  button.className =
+    'category-button';
+
+
+  if (
+    selectedCategory ===
+    category
+  ) {
+
+    button.classList.add(
+      'active'
+    );
+
   }
 
 
-  items.forEach(
+  button.textContent =
+    category +
+    '（' +
+    count +
+    '）';
+
+
+  button.onclick =
+    function() {
+
+      selectedCategory =
+        category;
+
+      renderCategoryButtons();
+
+      renderGallery();
+
+    };
+
+
+  return button;
+}
+
+
+// ------------------------------------------------------------
+// 現在の絞り込み結果
+// ------------------------------------------------------------
+function getFilteredItems() {
+
+  const keyword =
+    searchBox.value
+      .trim()
+      .toLowerCase();
+
+
+  return galleryData.filter(
     item => {
 
-      const card =
-        document.createElement(
-          'button'
+      const categoryOK =
+        selectedCategory ===
+        'すべて' ||
+        item.category ===
+        selectedCategory;
+
+
+      const keywordOK =
+        !keyword ||
+        item.name
+          .toLowerCase()
+          .includes(
+            keyword
+          ) ||
+        item.category
+          .toLowerCase()
+          .includes(
+            keyword
+          );
+
+
+      return (
+        categoryOK &&
+        keywordOK
+      );
+
+    }
+  );
+
+}
+
+
+// ------------------------------------------------------------
+// ギャラリー描画
+// ------------------------------------------------------------
+function renderGallery() {
+
+  const filtered =
+    getFilteredItems();
+
+
+  displayCount.textContent =
+    '表示数：' +
+    filtered.length +
+    ' / ' +
+    galleryData.length;
+
+
+  gallery.innerHTML =
+    '';
+
+
+  if (
+    filtered.length === 0
+  ) {
+
+    const empty =
+      document.createElement(
+        'div'
+      );
+
+    empty.className =
+      'empty';
+
+    empty.textContent =
+      '該当する画像がありません。';
+
+    gallery.appendChild(
+      empty
+    );
+
+    return;
+
+  }
+
+
+  let categories;
+
+
+  if (
+    selectedCategory ===
+    'すべて'
+  ) {
+
+    categories =
+      getCategories().filter(
+        category =>
+          filtered.some(
+            item =>
+              item.category ===
+              category
+          )
+      );
+
+  } else {
+
+    categories = [
+      selectedCategory
+    ];
+
+  }
+
+
+  categories.forEach(
+    category => {
+
+      const items =
+        filtered.filter(
+          item =>
+            item.category ===
+            category
         );
 
-      card.className =
-        'card';
+
+      if (
+        items.length === 0
+      ) {
+
+        return;
+
+      }
 
 
-      const img =
+      const section =
         document.createElement(
-          'img'
+          'section'
         );
 
-      img.src =
-        item.path;
-
-      img.alt =
-        item.name;
-
-      img.loading =
-        'lazy';
+      section.className =
+        'category-section';
 
 
-      const name =
+      const heading =
+        document.createElement(
+          'div'
+        );
+
+      heading.className =
+        'category-heading';
+
+
+      const title =
+        document.createElement(
+          'h2'
+        );
+
+      title.className =
+        'category-title';
+
+      title.textContent =
+        category;
+
+
+      const count =
         document.createElement(
           'span'
         );
 
-      name.textContent =
-        item.name;
+      count.className =
+        'category-count';
+
+      count.textContent =
+        items.length +
+        '件';
 
 
-      card.appendChild(
-        img
+      heading.appendChild(
+        title
       );
 
-      card.appendChild(
-        name
+      heading.appendChild(
+        count
       );
 
 
-      card.onclick =
-        () => {
+      const grid =
+        document.createElement(
+          'div'
+        );
 
-          largeImage.src =
-            item.path;
+      grid.className =
+        'gallery-grid';
 
-          largeImage.alt =
-            item.name;
 
-          modal.classList.add(
-            'open'
+      items.forEach(
+        item => {
+
+          grid.appendChild(
+            createCard(
+              item
+            )
           );
 
-        };
+        }
+      );
 
+
+      section.appendChild(
+        heading
+      );
+
+      section.appendChild(
+        grid
+      );
 
       gallery.appendChild(
-        card
+        section
       );
 
     }
   );
+
 }
 
 
-document
-  .getElementById('close')
-  .onclick =
-  () =>
-    modal.classList.remove(
-      'open'
+// ------------------------------------------------------------
+// カード生成
+// ------------------------------------------------------------
+function createCard(
+  item
+) {
+
+  const card =
+    document.createElement(
+      'button'
     );
 
 
-modal.onclick =
-  event => {
+  card.type =
+    'button';
 
-    if (
-      event.target === modal
-    ) {
+  card.className =
+    'card';
 
-      modal.classList.remove(
+
+  const imageArea =
+    document.createElement(
+      'div'
+    );
+
+  imageArea.className =
+    'image-area';
+
+
+  const image =
+    document.createElement(
+      'img'
+    );
+
+  image.src =
+    item.path;
+
+  image.alt =
+    item.name;
+
+  image.loading =
+    'lazy';
+
+
+  const title =
+    document.createElement(
+      'div'
+    );
+
+  title.className =
+    'card-title';
+
+  title.textContent =
+    item.name;
+
+
+  imageArea.appendChild(
+    image
+  );
+
+  card.appendChild(
+    imageArea
+  );
+
+  card.appendChild(
+    title
+  );
+
+
+  card.onclick =
+    function() {
+
+      modalImage.src =
+        item.path;
+
+      modalImage.alt =
+        item.name;
+
+      modal.classList.add(
         'open'
       );
+
+      document.body.style.overflow =
+        'hidden';
+
+    };
+
+
+  return card;
+}
+
+
+// ------------------------------------------------------------
+// モーダルを閉じる
+// ------------------------------------------------------------
+function closeModal() {
+
+  modal.classList.remove(
+    'open'
+  );
+
+  modalImage.src =
+    '';
+
+  document.body.style.overflow =
+    '';
+
+}
+
+
+modalClose.onclick =
+  closeModal;
+
+
+modal.onclick =
+  function(event) {
+
+    if (
+      event.target ===
+      modal
+    ) {
+
+      closeModal();
+
     }
 
   };
 
 
+document.addEventListener(
+  'keydown',
+  function(event) {
+
+    if (
+      event.key ===
+      'Escape'
+    ) {
+
+      closeModal();
+
+    }
+
+  }
+);
+
+
+// ------------------------------------------------------------
+// 検索
+// ------------------------------------------------------------
+searchBox.addEventListener(
+  'input',
+  function() {
+
+    renderGallery();
+
+  }
+);
+
+
+clearButton.onclick =
+  function() {
+
+    searchBox.value =
+      '';
+
+    selectedCategory =
+      'すべて';
+
+    renderCategoryButtons();
+
+    renderGallery();
+
+    searchBox.focus();
+
+  };
+
+
+// ------------------------------------------------------------
+// gallery.json読込
+// ------------------------------------------------------------
 fetch(
   'gallery.json?t=' +
   Date.now()
@@ -378,13 +1128,19 @@ fetch(
 .then(
   response => {
 
-    if (!response.ok) {
+    if (
+      !response.ok
+    ) {
+
       throw new Error(
         'gallery.json読込失敗'
       );
+
     }
 
+
     return response.json();
+
   }
 )
 
@@ -394,7 +1150,8 @@ fetch(
     galleryData =
       data;
 
-    renderCategories();
+
+    renderCategoryButtons();
 
     renderGallery();
 
@@ -404,14 +1161,15 @@ fetch(
 .catch(
   error => {
 
+    console.error(
+      error
+    );
+
+
     gallery.innerHTML =
       '<div class="empty">' +
       '画像一覧を読み込めませんでした。' +
       '</div>';
-
-    console.error(
-      error
-    );
 
   }
 );
