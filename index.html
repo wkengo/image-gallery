@@ -1,1 +1,423 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>画像ギャラリー</title></head><body style="font-family:'Meiryo UI',Meiryo,sans-serif"><h1>画像ギャラリー</h1><p>GitHub連携テスト完了</p></body></html>
+<!doctype html>
+<html lang="ja">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+
+<title>画像ギャラリー</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    "Meiryo UI",
+    Meiryo,
+    sans-serif;
+  background: #f5f6f8;
+  color: #222;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: white;
+  border-bottom: 1px solid #ccc;
+  padding: 10px;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+#categories {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+}
+
+#categories button {
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: 14px;
+  padding: 6px 12px;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  background: white;
+  cursor: pointer;
+}
+
+#categories button.active {
+  background: #222;
+  color: white;
+}
+
+#gallery {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(180px, 1fr)
+    );
+  gap: 8px;
+  padding: 10px;
+}
+
+.card {
+  padding: 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+  background: white;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  background: #eee;
+}
+
+.card span {
+  display: block;
+  padding: 7px;
+  font-size: 14px;
+}
+
+#modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background:
+    rgba(0,0,0,.88);
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+#modal.open {
+  display: flex;
+}
+
+#modal img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+#close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  color: white;
+  background: #222;
+  border: 1px solid #777;
+  border-radius: 5px;
+  font-size: 28px;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.empty {
+  padding: 20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>画像ギャラリー</h1>
+
+<div id="categories"></div>
+
+</header>
+
+<main id="gallery"></main>
+
+<div id="modal">
+
+<button id="close">×</button>
+
+<img id="largeImage">
+
+</div>
+
+<script>
+
+let galleryData = [];
+
+let currentCategory =
+  'すべて';
+
+
+const categories =
+  document.getElementById(
+    'categories'
+  );
+
+const gallery =
+  document.getElementById(
+    'gallery'
+  );
+
+const modal =
+  document.getElementById(
+    'modal'
+  );
+
+const largeImage =
+  document.getElementById(
+    'largeImage'
+  );
+
+
+function renderCategories() {
+
+  const names = [
+    'すべて',
+    ...new Set(
+      galleryData.map(
+        x => x.category
+      )
+    )
+  ];
+
+
+  categories.innerHTML = '';
+
+
+  names.forEach(
+    name => {
+
+      const button =
+        document.createElement(
+          'button'
+        );
+
+      button.textContent =
+        name;
+
+      if (
+        name ===
+        currentCategory
+      ) {
+
+        button.classList.add(
+          'active'
+        );
+      }
+
+
+      button.onclick =
+        () => {
+
+          currentCategory =
+            name;
+
+          renderCategories();
+
+          renderGallery();
+
+        };
+
+
+      categories.appendChild(
+        button
+      );
+
+    }
+  );
+}
+
+
+function renderGallery() {
+
+  const items =
+    currentCategory ===
+    'すべて'
+
+      ? galleryData
+
+      : galleryData.filter(
+          x =>
+            x.category ===
+            currentCategory
+        );
+
+
+  gallery.innerHTML = '';
+
+
+  if (!items.length) {
+
+    gallery.innerHTML =
+      '<div class="empty">画像がありません。</div>';
+
+    return;
+  }
+
+
+  items.forEach(
+    item => {
+
+      const card =
+        document.createElement(
+          'button'
+        );
+
+      card.className =
+        'card';
+
+
+      const img =
+        document.createElement(
+          'img'
+        );
+
+      img.src =
+        item.path;
+
+      img.alt =
+        item.name;
+
+      img.loading =
+        'lazy';
+
+
+      const name =
+        document.createElement(
+          'span'
+        );
+
+      name.textContent =
+        item.name;
+
+
+      card.appendChild(
+        img
+      );
+
+      card.appendChild(
+        name
+      );
+
+
+      card.onclick =
+        () => {
+
+          largeImage.src =
+            item.path;
+
+          largeImage.alt =
+            item.name;
+
+          modal.classList.add(
+            'open'
+          );
+
+        };
+
+
+      gallery.appendChild(
+        card
+      );
+
+    }
+  );
+}
+
+
+document
+  .getElementById('close')
+  .onclick =
+  () =>
+    modal.classList.remove(
+      'open'
+    );
+
+
+modal.onclick =
+  event => {
+
+    if (
+      event.target === modal
+    ) {
+
+      modal.classList.remove(
+        'open'
+      );
+    }
+
+  };
+
+
+fetch(
+  'gallery.json?t=' +
+  Date.now()
+)
+
+.then(
+  response => {
+
+    if (!response.ok) {
+      throw new Error(
+        'gallery.json読込失敗'
+      );
+    }
+
+    return response.json();
+  }
+)
+
+.then(
+  data => {
+
+    galleryData =
+      data;
+
+    renderCategories();
+
+    renderGallery();
+
+  }
+)
+
+.catch(
+  error => {
+
+    gallery.innerHTML =
+      '<div class="empty">' +
+      '画像一覧を読み込めませんでした。' +
+      '</div>';
+
+    console.error(
+      error
+    );
+
+  }
+);
+
+</script>
+
+</body>
+
+</html>
