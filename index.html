@@ -7,7 +7,7 @@
 
 <meta
   name="viewport"
-  content="width=device-width,initial-scale=1"
+  content="width=device-width,initial-scale=1,maximum-scale=1"
 >
 
 <title>便利機能の紹介ページ</title>
@@ -310,6 +310,7 @@ main {
   overflow: hidden;
   background: rgba(4,10,28,.93);
   user-select: none;
+  -webkit-user-select: none;
 }
 
 .modal.open {
@@ -372,6 +373,15 @@ main {
   left: 0;
   overflow: hidden;
   cursor: grab;
+
+  /*
+    iPhone / iPadで重要。
+    Safari標準のスクロール・拡大処理ではなく
+    このビューア側でタッチ操作を処理する。
+  */
+  touch-action: none;
+  -ms-touch-action: none;
+  overscroll-behavior: none;
 }
 
 .viewer-stage.dragging {
@@ -390,6 +400,10 @@ main {
   transform-origin: center center;
   will-change: transform;
   pointer-events: none;
+
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 
 .viewer-help {
@@ -416,14 +430,16 @@ main {
 
   .viewer-header {
     min-height: 64px;
-    padding: 8px 10px;
+    padding: 8px 8px;
   }
 
   .viewer-title {
-    font-size: 14px;
+    display: none;
   }
 
   .viewer-buttons {
+    width: 100%;
+    justify-content: center;
     gap: 4px;
   }
 
@@ -438,7 +454,13 @@ main {
   }
 
   .viewer-help {
-    display: none;
+    bottom: 8px;
+    left: 50%;
+    width: max-content;
+    max-width: calc(100% - 20px);
+    transform: translateX(-50%);
+    text-align: center;
+    font-size: 11px;
   }
 
 }
@@ -520,6 +542,11 @@ main {
 
   .image-area {
     height: 200px;
+  }
+
+  .viewer-button {
+    padding: 0 7px;
+    font-size: 11px;
   }
 
 }
@@ -666,9 +693,12 @@ main {
   </div>
 
 
-  <div class="viewer-help">
-    マウスホイール：拡大縮小 /
-    ドラッグ：移動 /
+  <div
+    id="viewerHelp"
+    class="viewer-help"
+  >
+    PC：ホイールで拡大縮小 / ドラッグで移動 /
+    iPhone：1本指で移動 / 2本指で拡大縮小 /
     Esc：閉じる
   </div>
 
@@ -754,20 +784,49 @@ const newTabButton =
   );
 
 
+// ============================================================
+// ビューア状態
+// ============================================================
+
 let viewerScale = 1;
 
 let viewerX = 0;
 let viewerY = 0;
 
-let dragging = false;
-
-let dragStartX = 0;
-let dragStartY = 0;
-
-let dragImageStartX = 0;
-let dragImageStartY = 0;
-
 let currentImagePath = '';
+
+
+// PCドラッグ
+let mouseDragging = false;
+
+let mouseStartX = 0;
+let mouseStartY = 0;
+
+let mouseImageStartX = 0;
+let mouseImageStartY = 0;
+
+
+// iPhone / iPad
+let touchDragging = false;
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+let touchImageStartX = 0;
+let touchImageStartY = 0;
+
+
+// ピンチ
+let pinchActive = false;
+
+let pinchStartDistance = 0;
+let pinchStartScale = 1;
+
+let pinchStartViewerX = 0;
+let pinchStartViewerY = 0;
+
+let pinchStartCenterX = 0;
+let pinchStartCenterY = 0;
 
 
 // ============================================================
@@ -1185,6 +1244,16 @@ function createCard(
       modalImage.alt =
         item.name;
 
+
+      modal.classList.add(
+        'open'
+      );
+
+
+      document.body.style.overflow =
+        'hidden';
+
+
       modalImage.onload =
         function() {
 
@@ -1192,12 +1261,6 @@ function createCard(
 
         };
 
-      modal.classList.add(
-        'open'
-      );
-
-      document.body.style.overflow =
-        'hidden';
 
       modalImage.src =
         item.path;
@@ -1210,7 +1273,7 @@ function createCard(
 
 
 // ============================================================
-// ビューア
+// ビューア変形
 // ============================================================
 
 function applyViewerTransform() {
@@ -1229,6 +1292,10 @@ function applyViewerTransform() {
 }
 
 
+// ============================================================
+// 全体表示
+// ============================================================
+
 function fitImage() {
 
   if (
@@ -1245,7 +1312,10 @@ function fitImage() {
   const stageHeight =
     viewerStage.clientHeight;
 
-  const margin = 24;
+
+  const margin =
+    24;
+
 
   const availableWidth =
     Math.max(
@@ -1253,6 +1323,7 @@ function fitImage() {
       stageWidth -
       margin * 2
     );
+
 
   const availableHeight =
     Math.max(
@@ -1274,8 +1345,11 @@ function fitImage() {
     );
 
 
-  viewerX = 0;
-  viewerY = 0;
+  viewerX =
+    0;
+
+  viewerY =
+    0;
 
 
   modalImage.style.width =
@@ -1292,6 +1366,10 @@ function fitImage() {
 }
 
 
+// ============================================================
+// 拡大縮小
+// ============================================================
+
 function changeZoom(
   multiplier,
   clientX,
@@ -1301,9 +1379,11 @@ function changeZoom(
   const oldScale =
     viewerScale;
 
+
   let newScale =
     oldScale *
     multiplier;
+
 
   newScale =
     Math.max(
@@ -1380,17 +1460,24 @@ function changeZoom(
 }
 
 
+// ============================================================
+// 閉じる
+// ============================================================
+
 function closeModal() {
 
   modal.classList.remove(
     'open'
   );
 
+
   modalImage.src =
     '';
 
+
   currentImagePath =
     '';
+
 
   viewerScale =
     1;
@@ -1401,12 +1488,21 @@ function closeModal() {
   viewerY =
     0;
 
-  dragging =
+
+  mouseDragging =
     false;
+
+  touchDragging =
+    false;
+
+  pinchActive =
+    false;
+
 
   viewerStage.classList.remove(
     'dragging'
   );
+
 
   document.body.style.overflow =
     '';
@@ -1415,7 +1511,7 @@ function closeModal() {
 
 
 // ============================================================
-// ビューアボタン
+// ボタン
 // ============================================================
 
 zoomInButton.onclick =
@@ -1469,7 +1565,7 @@ modalClose.onclick =
 
 
 // ============================================================
-// マウスホイール拡大縮小
+// PC：マウスホイール
 // ============================================================
 
 viewerStage.addEventListener(
@@ -1478,10 +1574,12 @@ viewerStage.addEventListener(
 
     event.preventDefault();
 
+
     const multiplier =
       event.deltaY < 0
         ? 1.12
         : 0.89;
+
 
     changeZoom(
       multiplier,
@@ -1497,7 +1595,7 @@ viewerStage.addEventListener(
 
 
 // ============================================================
-// ドラッグ移動
+// PC：ドラッグ開始
 // ============================================================
 
 viewerStage.addEventListener(
@@ -1510,20 +1608,24 @@ viewerStage.addEventListener(
       return;
     }
 
-    dragging =
+
+    mouseDragging =
       true;
 
-    dragStartX =
+
+    mouseStartX =
       event.clientX;
 
-    dragStartY =
+    mouseStartY =
       event.clientY;
 
-    dragImageStartX =
+
+    mouseImageStartX =
       viewerX;
 
-    dragImageStartY =
+    mouseImageStartY =
       viewerY;
+
 
     viewerStage.classList.add(
       'dragging'
@@ -1533,29 +1635,36 @@ viewerStage.addEventListener(
 );
 
 
+// ============================================================
+// PC：ドラッグ中
+// ============================================================
+
 window.addEventListener(
   'mousemove',
   function(event) {
 
     if (
-      !dragging
+      !mouseDragging
     ) {
       return;
     }
 
+
     viewerX =
-      dragImageStartX +
+      mouseImageStartX +
       (
         event.clientX -
-        dragStartX
+        mouseStartX
       );
 
+
     viewerY =
-      dragImageStartY +
+      mouseImageStartY +
       (
         event.clientY -
-        dragStartY
+        mouseStartY
       );
+
 
     applyViewerTransform();
 
@@ -1563,17 +1672,477 @@ window.addEventListener(
 );
 
 
+// ============================================================
+// PC：ドラッグ終了
+// ============================================================
+
 window.addEventListener(
   'mouseup',
   function() {
 
-    dragging =
+    mouseDragging =
       false;
+
 
     viewerStage.classList.remove(
       'dragging'
     );
 
+  }
+);
+
+
+// ============================================================
+// タッチ補助：2点間距離
+// ============================================================
+
+function getTouchDistance(
+  touch1,
+  touch2
+) {
+
+  const dx =
+    touch2.clientX -
+    touch1.clientX;
+
+
+  const dy =
+    touch2.clientY -
+    touch1.clientY;
+
+
+  return Math.sqrt(
+    dx * dx +
+    dy * dy
+  );
+
+}
+
+
+// ============================================================
+// タッチ補助：2本指の中心
+// ============================================================
+
+function getTouchCenter(
+  touch1,
+  touch2
+) {
+
+  return {
+
+    x:
+      (
+        touch1.clientX +
+        touch2.clientX
+      ) / 2,
+
+    y:
+      (
+        touch1.clientY +
+        touch2.clientY
+      ) / 2
+
+  };
+
+}
+
+
+// ============================================================
+// iPhone / iPad：タッチ開始
+// ============================================================
+
+viewerStage.addEventListener(
+  'touchstart',
+  function(event) {
+
+    event.preventDefault();
+
+
+    // --------------------------------------------------------
+    // 1本指
+    // --------------------------------------------------------
+
+    if (
+      event.touches.length ===
+      1
+    ) {
+
+      pinchActive =
+        false;
+
+
+      touchDragging =
+        true;
+
+
+      const touch =
+        event.touches[0];
+
+
+      touchStartX =
+        touch.clientX;
+
+      touchStartY =
+        touch.clientY;
+
+
+      touchImageStartX =
+        viewerX;
+
+      touchImageStartY =
+        viewerY;
+
+
+      viewerStage.classList.add(
+        'dragging'
+      );
+
+      return;
+
+    }
+
+
+    // --------------------------------------------------------
+    // 2本指
+    // --------------------------------------------------------
+
+    if (
+      event.touches.length ===
+      2
+    ) {
+
+      touchDragging =
+        false;
+
+      pinchActive =
+        true;
+
+
+      pinchStartDistance =
+        getTouchDistance(
+          event.touches[0],
+          event.touches[1]
+        );
+
+
+      pinchStartScale =
+        viewerScale;
+
+
+      pinchStartViewerX =
+        viewerX;
+
+      pinchStartViewerY =
+        viewerY;
+
+
+      const center =
+        getTouchCenter(
+          event.touches[0],
+          event.touches[1]
+        );
+
+
+      const rect =
+        viewerStage
+          .getBoundingClientRect();
+
+
+      pinchStartCenterX =
+        center.x -
+        rect.left -
+        rect.width / 2;
+
+
+      pinchStartCenterY =
+        center.y -
+        rect.top -
+        rect.height / 2;
+
+
+      viewerStage.classList.add(
+        'dragging'
+      );
+
+    }
+
+  },
+  {
+    passive: false
+  }
+);
+
+
+// ============================================================
+// iPhone / iPad：タッチ移動
+// ============================================================
+
+viewerStage.addEventListener(
+  'touchmove',
+  function(event) {
+
+    event.preventDefault();
+
+
+    // --------------------------------------------------------
+    // 1本指ドラッグ
+    // --------------------------------------------------------
+
+    if (
+      event.touches.length ===
+      1 &&
+      touchDragging &&
+      !pinchActive
+    ) {
+
+      const touch =
+        event.touches[0];
+
+
+      viewerX =
+        touchImageStartX +
+        (
+          touch.clientX -
+          touchStartX
+        );
+
+
+      viewerY =
+        touchImageStartY +
+        (
+          touch.clientY -
+          touchStartY
+        );
+
+
+      applyViewerTransform();
+
+      return;
+
+    }
+
+
+    // --------------------------------------------------------
+    // 2本指ピンチ
+    // --------------------------------------------------------
+
+    if (
+      event.touches.length ===
+      2 &&
+      pinchActive
+    ) {
+
+      if (
+        pinchStartDistance <= 0
+      ) {
+        return;
+      }
+
+
+      const distance =
+        getTouchDistance(
+          event.touches[0],
+          event.touches[1]
+        );
+
+
+      let newScale =
+        pinchStartScale *
+        (
+          distance /
+          pinchStartDistance
+        );
+
+
+      newScale =
+        Math.max(
+          0.05,
+          Math.min(
+            newScale,
+            8
+          )
+        );
+
+
+      const center =
+        getTouchCenter(
+          event.touches[0],
+          event.touches[1]
+        );
+
+
+      const rect =
+        viewerStage
+          .getBoundingClientRect();
+
+
+      const currentCenterX =
+        center.x -
+        rect.left -
+        rect.width / 2;
+
+
+      const currentCenterY =
+        center.y -
+        rect.top -
+        rect.height / 2;
+
+
+      const ratio =
+        newScale /
+        pinchStartScale;
+
+
+      /*
+        ピンチ開始時の指の中心にある画像位置を
+        指の中心に維持する。
+        さらに2本指を同時に動かした場合は
+        画像も一緒に移動する。
+      */
+
+      viewerX =
+        currentCenterX -
+        (
+          pinchStartCenterX -
+          pinchStartViewerX
+        ) *
+        ratio;
+
+
+      viewerY =
+        currentCenterY -
+        (
+          pinchStartCenterY -
+          pinchStartViewerY
+        ) *
+        ratio;
+
+
+      viewerScale =
+        newScale;
+
+
+      applyViewerTransform();
+
+    }
+
+  },
+  {
+    passive: false
+  }
+);
+
+
+// ============================================================
+// iPhone / iPad：指を離した
+// ============================================================
+
+viewerStage.addEventListener(
+  'touchend',
+  function(event) {
+
+    event.preventDefault();
+
+
+    // --------------------------------------------------------
+    // ピンチ後に1本指が残った場合
+    // そのまま1本指ドラッグへ移行
+    // --------------------------------------------------------
+
+    if (
+      event.touches.length ===
+      1
+    ) {
+
+      pinchActive =
+        false;
+
+
+      touchDragging =
+        true;
+
+
+      const touch =
+        event.touches[0];
+
+
+      touchStartX =
+        touch.clientX;
+
+      touchStartY =
+        touch.clientY;
+
+
+      touchImageStartX =
+        viewerX;
+
+      touchImageStartY =
+        viewerY;
+
+
+      return;
+
+    }
+
+
+    // --------------------------------------------------------
+    // 全ての指を離した
+    // --------------------------------------------------------
+
+    if (
+      event.touches.length ===
+      0
+    ) {
+
+      touchDragging =
+        false;
+
+      pinchActive =
+        false;
+
+
+      viewerStage.classList.remove(
+        'dragging'
+      );
+
+    }
+
+  },
+  {
+    passive: false
+  }
+);
+
+
+// ============================================================
+// iPhone / iPad：タッチキャンセル
+// ============================================================
+
+viewerStage.addEventListener(
+  'touchcancel',
+  function(event) {
+
+    if (event.cancelable) {
+
+      event.preventDefault();
+
+    }
+
+
+    touchDragging =
+      false;
+
+    pinchActive =
+      false;
+
+
+    viewerStage.classList.remove(
+      'dragging'
+    );
+
+  },
+  {
+    passive: false
   }
 );
 
@@ -1601,6 +2170,8 @@ document.addEventListener(
     ) {
 
       closeModal();
+
+      return;
 
     }
 
@@ -1676,9 +2247,11 @@ clearButton.onclick =
     selectedCategory =
       'すべて';
 
+
     renderCategoryButtons();
 
     renderGallery();
+
 
     searchBox.focus();
 
@@ -1707,6 +2280,7 @@ fetch(
 
     }
 
+
     return response.json();
 
   }
@@ -1717,6 +2291,7 @@ fetch(
 
     galleryData =
       data;
+
 
     renderCategoryButtons();
 
@@ -1731,6 +2306,7 @@ fetch(
     console.error(
       error
     );
+
 
     gallery.innerHTML =
       '<div class="empty">' +
