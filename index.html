@@ -177,7 +177,7 @@ main {
 
 
 /* ============================================================
-   カテゴリセクション
+   カテゴリ
 ============================================================ */
 
 .category-section {
@@ -216,7 +216,7 @@ main {
 
 
 /* ============================================================
-   カード一覧
+   ギャラリー
 ============================================================ */
 
 .gallery-grid {
@@ -290,11 +290,6 @@ main {
   overflow-wrap: anywhere;
 }
 
-
-/* ============================================================
-   0件
-============================================================ */
-
 .empty {
   padding: 50px 10px;
   color: #667085;
@@ -304,7 +299,7 @@ main {
 
 
 /* ============================================================
-   拡大ビュー
+   高機能画像ビューア
 ============================================================ */
 
 .modal {
@@ -312,38 +307,104 @@ main {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background:
-    rgba(5,10,25,.92);
+  overflow: hidden;
+  background: rgba(4,10,28,.93);
+  user-select: none;
 }
 
 .modal.open {
+  display: block;
+}
+
+.viewer-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1010;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 76px;
+  padding: 12px 20px;
+  background: #0c162d;
+}
+
+.viewer-title {
+  min-width: 0;
+  padding-right: 20px;
+  overflow: hidden;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.viewer-buttons {
+  display: flex;
+  flex-shrink: 0;
+  gap: 9px;
+}
+
+.viewer-button {
+  min-height: 46px;
+  padding: 0 17px;
+  border: 1px solid #d7dce5;
+  border-radius: 8px;
+  background: #fff;
+  color: #172033;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.viewer-button:hover {
+  background: #eef3ff;
+}
+
+.viewer-stage {
+  position: absolute;
+  top: 76px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.viewer-stage.dragging {
+  cursor: grabbing;
 }
 
 .modal-image {
-  max-width: calc(100vw - 40px);
-  max-height: calc(100vh - 40px);
-  object-fit: contain;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  max-width: none;
+  max-height: none;
+  width: auto;
+  height: auto;
+  transform-origin: center center;
+  will-change: transform;
+  pointer-events: none;
 }
 
-.modal-close {
-  position: fixed;
-  top: 15px;
-  right: 20px;
-  width: 46px;
-  height: 46px;
-  padding: 0;
-  border: 1px solid rgba(255,255,255,.4);
-  border-radius: 50%;
-  background: rgba(0,0,0,.45);
+.viewer-help {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 1010;
+  padding: 9px 13px;
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 6px;
+  background: rgba(8,18,39,.86);
   color: #fff;
-  font-family: Arial,sans-serif;
-  font-size: 30px;
-  line-height: 42px;
-  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.4;
+  pointer-events: none;
 }
 
 
@@ -351,13 +412,42 @@ main {
    スマートフォン
 ============================================================ */
 
-@media (
-  max-width: 700px
-) {
+@media (max-width: 800px) {
+
+  .viewer-header {
+    min-height: 64px;
+    padding: 8px 10px;
+  }
+
+  .viewer-title {
+    font-size: 14px;
+  }
+
+  .viewer-buttons {
+    gap: 4px;
+  }
+
+  .viewer-button {
+    min-height: 40px;
+    padding: 0 9px;
+    font-size: 12px;
+  }
+
+  .viewer-stage {
+    top: 64px;
+  }
+
+  .viewer-help {
+    display: none;
+  }
+
+}
+
+
+@media (max-width: 700px) {
 
   .hero {
-    padding:
-      22px 16px;
+    padding: 22px 16px;
   }
 
   .hero h1 {
@@ -369,8 +459,7 @@ main {
   }
 
   .controls-inner {
-    padding:
-      16px;
+    padding: 16px;
   }
 
   .search-row {
@@ -419,9 +508,7 @@ main {
 }
 
 
-@media (
-  max-width: 430px
-) {
+@media (max-width: 430px) {
 
   .gallery-grid {
     grid-template-columns:
@@ -510,20 +597,80 @@ main {
   class="modal"
 >
 
-  <button
-    id="modalClose"
-    class="modal-close"
-    type="button"
-    aria-label="閉じる"
-  >
-    ×
-  </button>
+  <div class="viewer-header">
 
-  <img
-    id="modalImage"
-    class="modal-image"
-    alt=""
+    <div
+      id="viewerTitle"
+      class="viewer-title"
+    ></div>
+
+    <div class="viewer-buttons">
+
+      <button
+        id="zoomOutButton"
+        class="viewer-button"
+        type="button"
+      >
+        縮小
+      </button>
+
+      <button
+        id="zoomInButton"
+        class="viewer-button"
+        type="button"
+      >
+        拡大
+      </button>
+
+      <button
+        id="fitButton"
+        class="viewer-button"
+        type="button"
+      >
+        全体表示
+      </button>
+
+      <button
+        id="newTabButton"
+        class="viewer-button"
+        type="button"
+      >
+        別タブ
+      </button>
+
+      <button
+        id="modalClose"
+        class="viewer-button"
+        type="button"
+      >
+        閉じる
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div
+    id="viewerStage"
+    class="viewer-stage"
   >
+
+    <img
+      id="modalImage"
+      class="modal-image"
+      alt=""
+      draggable="false"
+    >
+
+  </div>
+
+
+  <div class="viewer-help">
+    マウスホイール：拡大縮小 /
+    ドラッグ：移動 /
+    Esc：閉じる
+  </div>
 
 </div>
 
@@ -576,10 +723,57 @@ const modalClose =
     'modalClose'
   );
 
+const viewerStage =
+  document.getElementById(
+    'viewerStage'
+  );
 
-// ------------------------------------------------------------
-// カテゴリ一覧
-// ------------------------------------------------------------
+const viewerTitle =
+  document.getElementById(
+    'viewerTitle'
+  );
+
+const zoomInButton =
+  document.getElementById(
+    'zoomInButton'
+  );
+
+const zoomOutButton =
+  document.getElementById(
+    'zoomOutButton'
+  );
+
+const fitButton =
+  document.getElementById(
+    'fitButton'
+  );
+
+const newTabButton =
+  document.getElementById(
+    'newTabButton'
+  );
+
+
+let viewerScale = 1;
+
+let viewerX = 0;
+let viewerY = 0;
+
+let dragging = false;
+
+let dragStartX = 0;
+let dragStartY = 0;
+
+let dragImageStartX = 0;
+let dragImageStartY = 0;
+
+let currentImagePath = '';
+
+
+// ============================================================
+// カテゴリ
+// ============================================================
+
 function getCategories() {
 
   return [
@@ -594,9 +788,6 @@ function getCategories() {
 }
 
 
-// ------------------------------------------------------------
-// カテゴリ件数
-// ------------------------------------------------------------
 function getCategoryCount(
   category
 ) {
@@ -610,30 +801,20 @@ function getCategoryCount(
 }
 
 
-// ------------------------------------------------------------
-// カテゴリボタン描画
-// ------------------------------------------------------------
 function renderCategoryButtons() {
 
   const categories =
     getCategories();
 
-
   categoryButtons.innerHTML =
     '';
 
-
-  const allButton =
+  categoryButtons.appendChild(
     createCategoryButton(
       'すべて',
       galleryData.length
-    );
-
-
-  categoryButtons.appendChild(
-    allButton
+    )
   );
-
 
   categories.forEach(
     category => {
@@ -653,9 +834,6 @@ function renderCategoryButtons() {
 }
 
 
-// ------------------------------------------------------------
-// カテゴリボタン生成
-// ------------------------------------------------------------
 function createCategoryButton(
   category,
   count
@@ -666,14 +844,11 @@ function createCategoryButton(
       'button'
     );
 
-
   button.type =
     'button';
 
-
   button.className =
     'category-button';
-
 
   if (
     selectedCategory ===
@@ -686,13 +861,11 @@ function createCategoryButton(
 
   }
 
-
   button.textContent =
     category +
     '（' +
     count +
     '）';
-
 
   button.onclick =
     function() {
@@ -706,21 +879,20 @@ function createCategoryButton(
 
     };
 
-
   return button;
 }
 
 
-// ------------------------------------------------------------
-// 現在の絞り込み結果
-// ------------------------------------------------------------
+// ============================================================
+// 絞り込み
+// ============================================================
+
 function getFilteredItems() {
 
   const keyword =
     searchBox.value
       .trim()
       .toLowerCase();
-
 
   return galleryData.filter(
     item => {
@@ -730,7 +902,6 @@ function getFilteredItems() {
         'すべて' ||
         item.category ===
         selectedCategory;
-
 
       const keywordOK =
         !keyword ||
@@ -745,7 +916,6 @@ function getFilteredItems() {
             keyword
           );
 
-
       return (
         categoryOK &&
         keywordOK
@@ -757,14 +927,14 @@ function getFilteredItems() {
 }
 
 
-// ------------------------------------------------------------
+// ============================================================
 // ギャラリー描画
-// ------------------------------------------------------------
+// ============================================================
+
 function renderGallery() {
 
   const filtered =
     getFilteredItems();
-
 
   displayCount.textContent =
     '表示数：' +
@@ -772,10 +942,8 @@ function renderGallery() {
     ' / ' +
     galleryData.length;
 
-
   gallery.innerHTML =
     '';
-
 
   if (
     filtered.length === 0
@@ -802,7 +970,6 @@ function renderGallery() {
 
 
   let categories;
-
 
   if (
     selectedCategory ===
@@ -838,13 +1005,10 @@ function renderGallery() {
             category
         );
 
-
       if (
         items.length === 0
       ) {
-
         return;
-
       }
 
 
@@ -940,9 +1104,10 @@ function renderGallery() {
 }
 
 
-// ------------------------------------------------------------
-// カード生成
-// ------------------------------------------------------------
+// ============================================================
+// カード
+// ============================================================
+
 function createCard(
   item
 ) {
@@ -951,7 +1116,6 @@ function createCard(
     document.createElement(
       'button'
     );
-
 
   card.type =
     'button';
@@ -1012,11 +1176,21 @@ function createCard(
   card.onclick =
     function() {
 
-      modalImage.src =
+      currentImagePath =
         item.path;
+
+      viewerTitle.textContent =
+        item.name;
 
       modalImage.alt =
         item.name;
+
+      modalImage.onload =
+        function() {
+
+          fitImage();
+
+        };
 
       modal.classList.add(
         'open'
@@ -1025,6 +1199,9 @@ function createCard(
       document.body.style.overflow =
         'hidden';
 
+      modalImage.src =
+        item.path;
+
     };
 
 
@@ -1032,9 +1209,177 @@ function createCard(
 }
 
 
-// ------------------------------------------------------------
-// モーダルを閉じる
-// ------------------------------------------------------------
+// ============================================================
+// ビューア
+// ============================================================
+
+function applyViewerTransform() {
+
+  modalImage.style.transform =
+    'translate(-50%, -50%) ' +
+    'translate(' +
+    viewerX +
+    'px,' +
+    viewerY +
+    'px) ' +
+    'scale(' +
+    viewerScale +
+    ')';
+
+}
+
+
+function fitImage() {
+
+  if (
+    !modalImage.naturalWidth ||
+    !modalImage.naturalHeight
+  ) {
+    return;
+  }
+
+
+  const stageWidth =
+    viewerStage.clientWidth;
+
+  const stageHeight =
+    viewerStage.clientHeight;
+
+  const margin = 24;
+
+  const availableWidth =
+    Math.max(
+      1,
+      stageWidth -
+      margin * 2
+    );
+
+  const availableHeight =
+    Math.max(
+      1,
+      stageHeight -
+      margin * 2
+    );
+
+
+  viewerScale =
+    Math.min(
+      availableWidth /
+        modalImage.naturalWidth,
+
+      availableHeight /
+        modalImage.naturalHeight,
+
+      1
+    );
+
+
+  viewerX = 0;
+  viewerY = 0;
+
+
+  modalImage.style.width =
+    modalImage.naturalWidth +
+    'px';
+
+  modalImage.style.height =
+    modalImage.naturalHeight +
+    'px';
+
+
+  applyViewerTransform();
+
+}
+
+
+function changeZoom(
+  multiplier,
+  clientX,
+  clientY
+) {
+
+  const oldScale =
+    viewerScale;
+
+  let newScale =
+    oldScale *
+    multiplier;
+
+  newScale =
+    Math.max(
+      0.05,
+      Math.min(
+        newScale,
+        8
+      )
+    );
+
+
+  if (
+    Math.abs(
+      newScale -
+      oldScale
+    ) < 0.0001
+  ) {
+    return;
+  }
+
+
+  const rect =
+    viewerStage
+      .getBoundingClientRect();
+
+
+  const pointerX =
+    typeof clientX ===
+    'number'
+      ? clientX -
+        rect.left -
+        rect.width / 2
+      : 0;
+
+
+  const pointerY =
+    typeof clientY ===
+    'number'
+      ? clientY -
+        rect.top -
+        rect.height / 2
+      : 0;
+
+
+  const ratio =
+    newScale /
+    oldScale;
+
+
+  viewerX =
+    pointerX -
+    (
+      pointerX -
+      viewerX
+    ) *
+    ratio;
+
+
+  viewerY =
+    pointerY -
+    (
+      pointerY -
+      viewerY
+    ) *
+    ratio;
+
+
+  viewerScale =
+    newScale;
+
+
+  applyViewerTransform();
+
+}
+
+
 function closeModal() {
 
   modal.classList.remove(
@@ -1044,34 +1389,211 @@ function closeModal() {
   modalImage.src =
     '';
 
+  currentImagePath =
+    '';
+
+  viewerScale =
+    1;
+
+  viewerX =
+    0;
+
+  viewerY =
+    0;
+
+  dragging =
+    false;
+
+  viewerStage.classList.remove(
+    'dragging'
+  );
+
   document.body.style.overflow =
     '';
 
 }
 
 
-modalClose.onclick =
-  closeModal;
+// ============================================================
+// ビューアボタン
+// ============================================================
+
+zoomInButton.onclick =
+  function() {
+
+    changeZoom(
+      1.25
+    );
+
+  };
 
 
-modal.onclick =
-  function(event) {
+zoomOutButton.onclick =
+  function() {
+
+    changeZoom(
+      0.8
+    );
+
+  };
+
+
+fitButton.onclick =
+  function() {
+
+    fitImage();
+
+  };
+
+
+newTabButton.onclick =
+  function() {
 
     if (
-      event.target ===
-      modal
+      currentImagePath
     ) {
 
-      closeModal();
+      window.open(
+        currentImagePath,
+        '_blank',
+        'noopener'
+      );
 
     }
 
   };
 
 
+modalClose.onclick =
+  closeModal;
+
+
+// ============================================================
+// マウスホイール拡大縮小
+// ============================================================
+
+viewerStage.addEventListener(
+  'wheel',
+  function(event) {
+
+    event.preventDefault();
+
+    const multiplier =
+      event.deltaY < 0
+        ? 1.12
+        : 0.89;
+
+    changeZoom(
+      multiplier,
+      event.clientX,
+      event.clientY
+    );
+
+  },
+  {
+    passive: false
+  }
+);
+
+
+// ============================================================
+// ドラッグ移動
+// ============================================================
+
+viewerStage.addEventListener(
+  'mousedown',
+  function(event) {
+
+    if (
+      event.button !== 0
+    ) {
+      return;
+    }
+
+    dragging =
+      true;
+
+    dragStartX =
+      event.clientX;
+
+    dragStartY =
+      event.clientY;
+
+    dragImageStartX =
+      viewerX;
+
+    dragImageStartY =
+      viewerY;
+
+    viewerStage.classList.add(
+      'dragging'
+    );
+
+  }
+);
+
+
+window.addEventListener(
+  'mousemove',
+  function(event) {
+
+    if (
+      !dragging
+    ) {
+      return;
+    }
+
+    viewerX =
+      dragImageStartX +
+      (
+        event.clientX -
+        dragStartX
+      );
+
+    viewerY =
+      dragImageStartY +
+      (
+        event.clientY -
+        dragStartY
+      );
+
+    applyViewerTransform();
+
+  }
+);
+
+
+window.addEventListener(
+  'mouseup',
+  function() {
+
+    dragging =
+      false;
+
+    viewerStage.classList.remove(
+      'dragging'
+    );
+
+  }
+);
+
+
+// ============================================================
+// キーボード
+// ============================================================
+
 document.addEventListener(
   'keydown',
   function(event) {
+
+    if (
+      !modal.classList.contains(
+        'open'
+      )
+    ) {
+      return;
+    }
+
 
     if (
       event.key ===
@@ -1082,13 +1604,59 @@ document.addEventListener(
 
     }
 
+
+    if (
+      event.key === '+' ||
+      event.key === '='
+    ) {
+
+      changeZoom(
+        1.25
+      );
+
+    }
+
+
+    if (
+      event.key === '-'
+    ) {
+
+      changeZoom(
+        0.8
+      );
+
+    }
+
   }
 );
 
 
-// ------------------------------------------------------------
+// ============================================================
+// ウィンドウサイズ変更
+// ============================================================
+
+window.addEventListener(
+  'resize',
+  function() {
+
+    if (
+      modal.classList.contains(
+        'open'
+      )
+    ) {
+
+      fitImage();
+
+    }
+
+  }
+);
+
+
+// ============================================================
 // 検索
-// ------------------------------------------------------------
+// ============================================================
+
 searchBox.addEventListener(
   'input',
   function() {
@@ -1117,9 +1685,10 @@ clearButton.onclick =
   };
 
 
-// ------------------------------------------------------------
+// ============================================================
 // gallery.json読込
-// ------------------------------------------------------------
+// ============================================================
+
 fetch(
   'gallery.json?t=' +
   Date.now()
@@ -1138,7 +1707,6 @@ fetch(
 
     }
 
-
     return response.json();
 
   }
@@ -1149,7 +1717,6 @@ fetch(
 
     galleryData =
       data;
-
 
     renderCategoryButtons();
 
@@ -1164,7 +1731,6 @@ fetch(
     console.error(
       error
     );
-
 
     gallery.innerHTML =
       '<div class="empty">' +
